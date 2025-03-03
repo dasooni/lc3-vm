@@ -73,12 +73,6 @@ enum
     TRAP_HALT = 0x25   /* halt the program */
 };
 
-// Checks if a key has been pressed
-int check_key()
-{
-    return _kbhit();
-}
-
 // Sign extends a number to 16 bits
 uint16_t sign_extend(uint16_t x, int bit_count)
 {
@@ -160,6 +154,15 @@ enum
     MR_KBDR = 0xFE02  /* keyboard data */
 };
 
+// Input buffering
+HANDLE hStdin = INVALID_HANDLE_VALUE;
+DWORD fdwMode, fdwOldMode;
+
+uint16_t check_key()
+{
+    return WaitForSingleObject(hStdin, 1000) == WAIT_OBJECT_0 && _kbhit();
+}
+
 // Memory access setter
 void mem_write(uint16_t address, uint16_t val)
 {
@@ -184,9 +187,6 @@ uint16_t mem_read(uint16_t address)
     return memory[address];
 }
 
-// Input buffering
-HANDLE hStdin = INVALID_HANDLE_VALUE;
-DWORD fdwMode, fdwOldMode;
 
 // Disable input buffering
 void disable_input_buffering()
@@ -205,11 +205,6 @@ void disable_input_buffering()
 void restore_input_buffering()
 {
     SetConsoleMode(hStdin, fdwOldMode);
-}
-
-uint16_t check_key()
-{
-    return WaitForSingleObject(hStdin, 1000) == WAIT_OBJECT_0 && _kbhit();
 }
 
 // restore settings after interrupt
